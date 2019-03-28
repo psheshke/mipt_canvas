@@ -22,7 +22,6 @@
 
 # In[1]:
 
-
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import numpy as np
@@ -34,7 +33,6 @@ import pandas as pd
 # одинаковые значения при одном и том же seed. Не стоит менять seed далее в коде, иначе ответы могут не сойтись.***
 
 # In[2]:
-
 
 def seed_random(seed, *args):
     np.random.seed(seed)
@@ -54,7 +52,6 @@ def seed_random(seed, *args):
 # **Примечание:** Здесь предполагается, что $b$ - свободный член - является частью вектора весов: $w_0$. Тогда, если к $X$ приписать единичный столбец, в скалярном произведении $b$ будет именно как свободный член.
 
 # In[3]:
-
 
 def Loss(y_pred, y):
     
@@ -131,27 +128,37 @@ def Loss(y_pred, y):
 
 # In[4]:
 
-
 def relu(x):
     """ReLU-функция"""
     return np.maximum(x, 0)
 
 
-# In[5]:
+# In[ ]:
 
+
+
+
+# In[21]:
+
+x = np.array([1, 2, 3, 0, -4, 2])
+
+
+np.array(x > 0, dtype=np.int64)
+
+
+# In[22]:
 
 def relu_derivative(y):
     """Производная ReLU. Мы вычисляем ее не по x, который подставили в ReLU, а по значению, который она вернула. 
     На самом деле, мы могли бы так не делать и вычислять производную по x (код при этом даже не поменялся бы), 
     но обычно на стадии обратного прохода у нас уже нет X @ w, который мы передавали в функцию, зато есть 
     вычисленное значение активации - тот самый y"""
-    return 1. * (y > 0)
+    return np.array(y > 0, dtype=np.int64)
 
 
 # Теперь нужно написать нейрон с ReLU. Здесь всё очень похоже на перцептрон, но будут по-другому обновляться веса и другая функция активации:
 
-# In[6]:
-
+# In[23]:
 
 class NeuronReLU:
     def __init__(self, w=None, b=0):
@@ -224,8 +231,7 @@ class NeuronReLU:
 
 # **(для теста) Проверка forward_pass()**
 
-# In[7]:
-
+# In[45]:
 
 w = np.array([1., 2.]).reshape(2, 1)
 b = 2.
@@ -244,14 +250,12 @@ print ("y_pred = " + str(y_pred))
 
 # Просьба **не менять `learning rate=0.005` по-умолчанию**.
 
-# In[9]:
-
+# In[46]:
 
 y = np.array([1, 0, 1]).reshape(3, 1)
 
 
-# In[10]:
-
+# In[47]:
 
 neuron.backward_pass(X, y, y_pred)
 
@@ -259,38 +263,57 @@ print ("w = " + str(neuron.w))
 print ("b = " + str(neuron.b))
 
 
-# In[11]:
-
+# In[48]:
 
 X
 
 
-# In[12]:
-
+# In[49]:
 
 w
 
 
-# In[17]:
+# In[50]:
+
+w.shape
 
 
-(X@w > 0).astype(int)
+# In[51]:
+
+X.shape
+
+
+# In[52]:
+
+X@w
+
+
+# In[53]:
+
+relu_derivative(X@w)
+
+
+# In[54]:
+
+X.T @ relu_derivative(X@w) / 3
+
+
+# In[20]:
+
+
 
 
 # In[19]:
 
-
-(X.T @ (y_pred - y))
+X
 
 
 # In[174]:
-
 
 (X > 0)
 
 
 # In[ ]:
-
 
 self.w = self.w - learning_rate * (X@self.w > 0).astype(int).T * (X.T @ (y_pred - y)) / n
 
@@ -298,7 +321,6 @@ self.w = self.w - learning_rate * (X@self.w > 0).astype(int).T * (X.T @ (y_pred 
 # "Яблоки и Груши":
 
 # In[167]:
-
 
 data = pd.read_csv("./data/apples_pears.csv")
 plt.figure(figsize=(10, 8))
@@ -311,7 +333,6 @@ plt.show();
 
 # In[168]:
 
-
 X = data.iloc[:,:2].values  # матрица объекты-признаки
 y = data['target'].values.reshape((-1, 1))  # классы (столбец из нулей и единиц)
 
@@ -319,7 +340,6 @@ y = data['target'].values.reshape((-1, 1))  # классы (столбец из 
 # Выведите лосс при обучении нейрона с ReLU на этом датасете:
 
 # In[170]:
-
 
 get_ipython().run_cell_magic('time', '', "\nneuron = NeuronReLU()\nLoss_values = neuron.fit(X, y)\n\nplt.figure(figsize=(10, 8))\nplt.plot(Loss_values)\nplt.title('Функция потерь', fontsize=15)\nplt.xlabel('номер итерации', fontsize=14)\nplt.ylabel('$Loss(\\hat{y}, y)$', fontsize=14)\nplt.show()")
 
@@ -334,7 +354,6 @@ get_ipython().run_cell_magic('time', '', "\nneuron = NeuronReLU()\nLoss_values =
 
 # In[ ]:
 
-
 get_ipython().run_cell_magic('time', '', "\nneuron = NeuronReLU(w=seed_random(42, X.shape[1], 1), b=seed_random(43, 1))\nLoss_values = <Ваш код здесь>  # num_epochs=10000\n\nplt.figure(figsize=(10, 8))\nplt.plot(Loss_values)\nplt.title('Функция потерь', fontsize=15)\nplt.xlabel('номер итерации', fontsize=14)\nplt.ylabel('$Loss(\\hat{y}, y)$', fontsize=14)\nplt.show()")
 
 
@@ -344,14 +363,12 @@ get_ipython().run_cell_magic('time', '', "\nneuron = NeuronReLU(w=seed_random(42
 
 # In[ ]:
 
-
 <Ваш код здесь>
 
 
 # Посмотрим, как предсказывает этот нейрон:
 
 # In[ ]:
-
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=np.array(neuron.forward_pass(X) > 0.5).ravel(), cmap='spring')
@@ -438,14 +455,12 @@ plt.show();
 
 # In[ ]:
 
-
 def leaky_relu(x, alpha=0.01):
     """LeakyReLU-функция"""
     <Ваш код здесь>
 
 
 # In[ ]:
-
 
 def leaky_relu_derivative(y, alpha=0.01):
     """Производная LeakyReLU. Тут мы тоже вычисляем производную по y. Пояснения, почему мы так делаем,
@@ -456,7 +471,6 @@ def leaky_relu_derivative(y, alpha=0.01):
 # Теперь нужно написать нейрон с LeakyReLU функцией активации. Здесь всё очень похоже на перцептрон, но будут по-другому обновляться веса и другая функция активации:
 
 # In[ ]:
-
 
 class NeuronLeakyReLU:
     def __init__(self, w=None, b=0):
@@ -524,7 +538,6 @@ class NeuronLeakyReLU:
 
 # In[ ]:
 
-
 w = np.array([1., 2.]).reshape(2, 1)
 b = 2.
 X = np.array([[1., 3.],
@@ -544,12 +557,10 @@ print ("y_pred = " + str(y_pred))
 
 # In[ ]:
 
-
 y = np.array([1, 0, 1]).reshape(3, 1)
 
 
 # In[ ]:
-
 
 neuron.backward_pass(X, y, y_pred)
 
@@ -560,7 +571,6 @@ print ("b = " + str(neuron.b))
 # "Яблоки и Груши":
 
 # In[ ]:
-
 
 data = pd.read_csv("./data/apples_pears.csv")
 plt.figure(figsize=(10, 8))
@@ -573,7 +583,6 @@ plt.show();
 
 # In[ ]:
 
-
 X = data.iloc[:,:2].values  # матрица объекты-признаки
 y = data['target'].values.reshape((-1, 1))  # классы (столбец из нулей и единиц)
 
@@ -584,7 +593,6 @@ y = data['target'].values.reshape((-1, 1))  # классы (столбец из 
 
 # In[ ]:
 
-
 get_ipython().run_cell_magic('time', '', "\nneuron = NeuronLeakyReLU(w=seed_random(13, X.shape[1], 1), b=seed_random(14, 1))\nLoss_values = <Ваш код здесь>  # num_epochs=10000\n\nplt.figure(figsize=(10, 8))\nplt.plot(Loss_values)\nplt.title('Функция потерь', fontsize=15)\nplt.xlabel('номер итерации', fontsize=14)\nplt.ylabel('$Loss(\\hat{y}, y)$', fontsize=14)\nplt.show()")
 
 
@@ -594,14 +602,12 @@ get_ipython().run_cell_magic('time', '', "\nneuron = NeuronLeakyReLU(w=seed_rand
 
 # In[ ]:
 
-
 <Ваш код здесь>
 
 
 # Посмотрим, как предсказывает этот нейрон:
 
 # In[ ]:
-
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=np.array(neuron.forward_pass(X) > 0.5).ravel(), cmap='spring')
@@ -678,14 +684,12 @@ plt.show();
 
 # In[ ]:
 
-
 def elu(x, alpha=0.01):
     """ELU-функция"""
     <Ваш код здесь>
 
 
 # In[ ]:
-
 
 def elu_derivative(y, alpha=0.01):
     """Производная ELU, снова вычисляем производную по значению"""
@@ -695,7 +699,6 @@ def elu_derivative(y, alpha=0.01):
 # Теперь нужно написать нейрон с ELU функцией активации:
 
 # In[ ]:
-
 
 class NeuronELU:
     def __init__(self, w=None, b=0):
@@ -759,7 +762,6 @@ class NeuronELU:
 
 # In[ ]:
 
-
 data = pd.read_csv("./data/apples_pears.csv")
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=data['target'], cmap='rainbow')
@@ -771,7 +773,6 @@ plt.show();
 
 # In[ ]:
 
-
 X = data.iloc[:,:2].values  # матрица объекты-признаки
 y = data['target'].values.reshape((-1, 1))  # классы (столбец из нулей и единиц)
 
@@ -779,7 +780,6 @@ y = data['target'].values.reshape((-1, 1))  # классы (столбец из 
 # Обучим нейрон, инициализировав случайно веса (поставьте 10000 итераций):
 
 # In[ ]:
-
 
 get_ipython().run_cell_magic('time', '', "\nneuron = NeuronELU(w=seed_random(10, X.shape[1], 1), b=seed_random(11, 1))\nLoss_values = <Ваш код здесь>  # num_epochs=10000\n\nplt.figure(figsize=(10, 8))\nplt.plot(Loss_values)\nplt.title('Функция потерь', fontsize=15)\nplt.xlabel('номер итерации', fontsize=14)\nplt.ylabel('$Loss(\\hat{y}, y)$', fontsize=14)\nplt.show()")
 
@@ -790,14 +790,12 @@ get_ipython().run_cell_magic('time', '', "\nneuron = NeuronELU(w=seed_random(10,
 
 # In[ ]:
 
-
 <Ваш код здесь>
 
 
 # Посмотрим, как предсказывает этот нейрон:
 
 # In[ ]:
-
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=np.array(neuron.forward_pass(X) > 0.5).ravel(), cmap='spring')

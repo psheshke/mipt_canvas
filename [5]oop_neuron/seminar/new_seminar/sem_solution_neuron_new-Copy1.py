@@ -10,7 +10,7 @@
 
 # ---
 
-# In[1]:
+# In[2]:
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -58,14 +58,14 @@ import pandas as pd
 
 # Реализуем сигмоиду и её производную:
 
-# In[2]:
+# In[3]:
 
 def sigmoid(x):
     """Сигмоидальная функция"""
     return 1 / (1 + np.exp(-x))
 
 
-# In[3]:
+# In[4]:
 
 def sigmoid_derivative(x):
     """Производная сигмоиды"""
@@ -74,7 +74,7 @@ def sigmoid_derivative(x):
 
 # Теперь нужно написать нейрон с сигмоидной функцией активации. Здесь всё очень похоже на перцептрон, но будут по-другому обновляться веса и другая функция активации:
 
-# In[4]:
+# In[5]:
 
 def loss(y_pred, y):
     '''
@@ -85,7 +85,7 @@ def loss(y_pred, y):
     return 0.5 * np.mean((y_pred - y) ** 2)
 
 
-# In[5]:
+# In[37]:
 
 class Neuron:
     def __init__(self, w=None, b=0):
@@ -123,8 +123,8 @@ class Neuron:
         n = len(y)
         y = np.array(y).reshape(-1, 1)
         sigma = self.activate(X @ self.w + self.b)
-        self.w = self.w - learning_rate * (X.T @ ((sigma - y) * sigma * (1 - sigma))) / n
-        self.b = self.b - learning_rate * np.mean((sigma - y) * sigma * (1 - sigma))
+        self.w = self.w - learning_rate * (X.T @ ((sigma - y) * sigmoid_derivative(X @ self.w + self.b))) / n
+        self.b = self.b - learning_rate * np.mean((sigma - y) * sigmoid_derivative(X @ self.w + self.b))
     
     def fit(self, X, y, num_epochs=5000):
         """
@@ -155,7 +155,7 @@ class Neuron:
 
 # **Проверка forward_pass()**
 
-# In[6]:
+# In[38]:
 
 w = np.array([1., 2.]).reshape(2, 1)
 b = 2.
@@ -170,12 +170,12 @@ print ("y_pred = " + str(y_pred))
 
 # **Проверка backward_pass()**
 
-# In[7]:
+# In[39]:
 
 y = np.array([1, 0, 1]).reshape(3, 1)
 
 
-# In[8]:
+# In[40]:
 
 neuron.backward_pass(X, y, y_pred)
 
@@ -183,19 +183,60 @@ print ("w = " + str(neuron.w))
 print ("b = " + str(neuron.b))
 
 
+# In[30]:
+
+n = len(y)
+y = np.array(y).reshape(-1, 1)
+sigma = neuron.activate(X @ w + b)
+w1 = w - 0.1 * (X.T @ ((sigma - y) * sigma * (1 - sigma))) / n
+
+
+# In[15]:
+
+w1
+
+
+# In[16]:
+
+n = len(y)
+y = np.array(y).reshape(-1, 1)
+sigma = neuron.activate(X @ w + b)
+w2 = w - 0.1 * (X.T @ ((sigma - y) * sigmoid_derivative(X @ w + b))) / n
+
+
+# In[17]:
+
+w2
+
+
+# In[ ]:
+
+
+
+
+# In[ ]:
+
+
+
+
+# In[ ]:
+
+
+
+
 # Посмотрим, как меняется функция потерь в течение процесса обучения на реальных данных - датасет "Яблоки и Груши":
 
-# In[11]:
+# In[41]:
 
 data = pd.read_csv("./data/apples_pears.csv")
 
 
-# In[12]:
+# In[42]:
 
 data.head()
 
 
-# In[13]:
+# In[43]:
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=data['target'], cmap='rainbow')
@@ -207,7 +248,7 @@ plt.show();
 
 # Обозначим, что здесь признаки, а что - классы:
 
-# In[14]:
+# In[44]:
 
 X = data.iloc[:,:2].values  # матрица объекты-признаки
 y = data['target'].values.reshape((-1, 1))  # классы (столбец из нулей и единиц)
@@ -216,14 +257,14 @@ y = data['target'].values.reshape((-1, 1))  # классы (столбец из 
 # **Вывод функции потерь**  
 # Функция потерь должна убывать и в итоге стать близкой к 0
 
-# In[15]:
+# In[45]:
 
 get_ipython().run_cell_magic('time', '', "\nneuron = Neuron()\nLoss_values = neuron.fit(X, y)\n\nplt.figure(figsize=(10, 8))\nplt.plot(Loss_values)\nplt.title('Функция потерь', fontsize=15)\nplt.xlabel('номер итерации', fontsize=14)\nplt.ylabel('$Loss(\\hat{y}, y)$', fontsize=14)\nplt.show()")
 
 
 # Посмотрим, как нейрон классифицировал объекты из выборки:
 
-# In[16]:
+# In[46]:
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=np.array(neuron.forward_pass(X) > 0.5).ravel(), cmap='spring')
@@ -237,7 +278,7 @@ plt.show();
 # 
 # Попробуем увеличить количество итераций градиентного спуска (50k итераций):
 
-# In[17]:
+# In[47]:
 
 get_ipython().run_cell_magic('time', '', "\nneuron = Neuron()\nloss_values = neuron.fit(X, y, num_epochs=50000)\n\nplt.figure(figsize=(10, 8))\nplt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=np.array(neuron.forward_pass(X) > 0.5).ravel(), cmap='spring')\nplt.title('Яблоки и груши', fontsize=15)\nplt.xlabel('симметричность', fontsize=14)\nplt.ylabel('желтизна', fontsize=14)\nplt.show();")
 

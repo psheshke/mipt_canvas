@@ -26,7 +26,6 @@
 
 # In[4]:
 
-
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import numpy as np
@@ -63,7 +62,6 @@ import pandas as pd
 
 # In[1]:
 
-
 def Loss(y_pred, y):
     '''
     Считаем среднеквадратичную ошибку
@@ -98,7 +96,6 @@ def Loss(y_pred, y):
 # *Примечание*: В коде ниже `y_pred` -- это $\hat{y}$ из формул выше
 
 # In[5]:
-
 
 class Perceptron:
     def __init__(self, w=None, b=0):
@@ -167,7 +164,6 @@ class Perceptron:
 
 # In[15]:
 
-
 w = np.array([1., 2.]).reshape(2, 1)
 b = 2.
 X = np.array([[1., 2., -1.], [3., 4., -3.2]])
@@ -181,12 +177,10 @@ print ("y_pred = " + str(y_pred))
 
 # In[25]:
 
-
 y = np.array([1, 0, 1]).reshape(3, 1)
 
 
 # In[28]:
-
 
 (y_pred - y)
 
@@ -194,11 +188,14 @@ y = np.array([1, 0, 1]).reshape(3, 1)
 # In[ ]:
 
 
+
+
+# In[ ]:
+
 self.w = self.w - learning_rate * (X.T @ (y_pred - y) / n)
 
 
 # In[27]:
-
 
 perceptron.backward_pass(X.T, y, y_pred)
 
@@ -210,18 +207,15 @@ print ("b = " + str(perceptron.b))
 
 # In[9]:
 
-
 data = pd.read_csv("./homework/data/apples_pears.csv")
 
 
 # In[10]:
 
-
 data.head()
 
 
 # In[11]:
-
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=data['target'], cmap='rainbow')
@@ -237,7 +231,6 @@ plt.show();
 
 # In[12]:
 
-
 X = data.iloc[:,:2].values  # матрица объекты-признаки
 y = data['target'].values.reshape((-1, 1))  # классы (столбец из нулей и единиц)
 
@@ -247,14 +240,12 @@ y = data['target'].values.reshape((-1, 1))  # классы (столбец из 
 
 # In[13]:
 
-
 get_ipython().run_cell_magic('time', '', "perceptron = Perceptron()\nlosses = perceptron.fit(X, y)\n\nplt.figure(figsize=(10, 8))\nplt.plot(losses)\nplt.title('Функция потерь', fontsize=15)\nplt.xlabel('номер итерации', fontsize=14)\nplt.ylabel('$Loss(\\hat{y}, y)$', fontsize=14)\nplt.show()")
 
 
 # Посмотрим, как перцептрон классифицировал объекты из выборки:
 
 # In[14]:
-
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=perceptron.forward_pass(X).ravel(), cmap='spring')
@@ -272,14 +263,12 @@ plt.show();
 
 # In[15]:
 
-
 import pandas as pd
 from sklearn.linear_model import Perceptron as skPerceptron
 from sklearn.metrics import accuracy_score
 
 
 # In[18]:
-
 
 data_path = './homework/data/voice.csv'
 data = pd.read_csv(data_path)
@@ -288,19 +277,16 @@ data['label'] = data['label'].apply(lambda x: 1 if x == 'male' else 0)
 
 # In[19]:
 
-
 data.head()
 
 
 # In[20]:
-
 
 # Чтобы перемешать данные. Изначально там сначала идут все мужчины, потом все женщины
 data = data.sample(frac=1)
 
 
 # In[21]:
-
 
 X_train = data.iloc[:int(len(data)*0.7), :-1]  # матрица объекты-признаки
 y_train = data.iloc[:int(len(data)*0.7), -1]  # истинные значения пола (мужчина/женщина)
@@ -312,7 +298,6 @@ y_test = data.iloc[int(len(data)*0.7):, -1]  # истинные значения
 # Натренируем наш перцептрон и перцептрон из `sklearn` на этих данных:
 
 # In[22]:
-
 
 RANDOM_SEED = 42
 
@@ -327,7 +312,6 @@ sk_perceptron.fit(X_train.values, y_train.values)
 
 # In[23]:
 
-
 print('Точность (доля правильных ответов, из 100%) нашего перцептрона: {:.3f} %'.format(
     accuracy_score(y_test.values, perceptron.forward_pass(X_test)) * 100))
 print('Точность (доля правильных ответов) перцептрона из sklearn: {:.3f} %'.format(
@@ -337,7 +321,6 @@ print('Точность (доля правильных ответов) перц�
 # Попробуем поставить число итераций побольше:
 
 # In[24]:
-
 
 RANDOM_SEED = 42
 
@@ -349,7 +332,6 @@ sk_perceptron.fit(X_train.values, y_train.values, )
 
 
 # In[25]:
-
 
 print('Точность (доля правильных ответов, из 100%) нашего перцептрона: {:.3f} %'.format(
     accuracy_score(y_test.values, perceptron.forward_pass(X_test)) * 100))
