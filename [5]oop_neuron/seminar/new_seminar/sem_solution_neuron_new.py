@@ -12,6 +12,7 @@
 
 # In[1]:
 
+
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import numpy as np
@@ -60,12 +61,14 @@ import pandas as pd
 
 # In[2]:
 
+
 def sigmoid(x):
     """Сигмоидальная функция"""
     return 1 / (1 + np.exp(-x))
 
 
 # In[3]:
+
 
 def sigmoid_derivative(x):
     """Производная сигмоиды"""
@@ -75,6 +78,7 @@ def sigmoid_derivative(x):
 # Теперь нужно написать нейрон с сигмоидной функцией активации. Здесь всё очень похоже на перцептрон, но будут по-другому обновляться веса и другая функция активации:
 
 # In[4]:
+
 
 def loss(y_pred, y):
     '''
@@ -86,6 +90,7 @@ def loss(y_pred, y):
 
 
 # In[5]:
+
 
 class Neuron:
     def __init__(self, w=None, b=0):
@@ -157,6 +162,7 @@ class Neuron:
 
 # In[6]:
 
+
 w = np.array([1., 2.]).reshape(2, 1)
 b = 2.
 X = np.array([[1., 3.],
@@ -172,10 +178,12 @@ print ("y_pred = " + str(y_pred))
 
 # In[7]:
 
+
 y = np.array([1, 0, 1]).reshape(3, 1)
 
 
 # In[8]:
+
 
 neuron.backward_pass(X, y, y_pred)
 
@@ -183,19 +191,64 @@ print ("w = " + str(neuron.w))
 print ("b = " + str(neuron.b))
 
 
+# In[9]:
+
+
+X
+
+
+# In[10]:
+
+
+y
+
+
+# In[12]:
+
+
+b,w
+
+
+# In[13]:
+
+
+n = len(y)
+y = np.array(y).reshape(-1, 1)
+
+
+# In[15]:
+
+
+sigma = neuron.activate(X @ w + b)
+sigma
+
+
+# In[ ]:
+
+
+n = len(y)
+y = np.array(y).reshape(-1, 1)
+sigma = self.activate(X @ self.w + self.b)
+self.w = self.w - learning_rate * (X.T @ ((sigma - y) * sigma * (1 - sigma))) / n
+self.b = self.b - learning_rate * np.mean((sigma - y) * sigma * (1 - sigma))
+
+
 # Посмотрим, как меняется функция потерь в течение процесса обучения на реальных данных - датасет "Яблоки и Груши":
 
 # In[11]:
+
 
 data = pd.read_csv("./data/apples_pears.csv")
 
 
 # In[12]:
 
+
 data.head()
 
 
 # In[13]:
+
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=data['target'], cmap='rainbow')
@@ -209,6 +262,7 @@ plt.show();
 
 # In[14]:
 
+
 X = data.iloc[:,:2].values  # матрица объекты-признаки
 y = data['target'].values.reshape((-1, 1))  # классы (столбец из нулей и единиц)
 
@@ -218,12 +272,14 @@ y = data['target'].values.reshape((-1, 1))  # классы (столбец из 
 
 # In[15]:
 
+
 get_ipython().run_cell_magic('time', '', "\nneuron = Neuron()\nLoss_values = neuron.fit(X, y)\n\nplt.figure(figsize=(10, 8))\nplt.plot(Loss_values)\nplt.title('Функция потерь', fontsize=15)\nplt.xlabel('номер итерации', fontsize=14)\nplt.ylabel('$Loss(\\hat{y}, y)$', fontsize=14)\nplt.show()")
 
 
 # Посмотрим, как нейрон классифицировал объекты из выборки:
 
 # In[16]:
+
 
 plt.figure(figsize=(10, 8))
 plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=np.array(neuron.forward_pass(X) > 0.5).ravel(), cmap='spring')
@@ -238,6 +294,7 @@ plt.show();
 # Попробуем увеличить количество итераций градиентного спуска (50k итераций):
 
 # In[17]:
+
 
 get_ipython().run_cell_magic('time', '', "\nneuron = Neuron()\nloss_values = neuron.fit(X, y, num_epochs=50000)\n\nplt.figure(figsize=(10, 8))\nplt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=np.array(neuron.forward_pass(X) > 0.5).ravel(), cmap='spring')\nplt.title('Яблоки и груши', fontsize=15)\nplt.xlabel('симметричность', fontsize=14)\nplt.ylabel('желтизна', fontsize=14)\nplt.show();")
 
