@@ -725,16 +725,16 @@ class ConvNet(torch.nn.Module):
     def __init__(self, num_classes=10):
         super(ConvNet, self).__init__()
         self.layer1 = torch.nn.Sequential(
-            torch.nn.Conv2d(1, 16, kernel_size=5, stride=1, padding=2),
-            torch.nn.BatchNorm2d(16),
-            torch.nn.ReLU(),
-            torch.nn.MaxPool2d(kernel_size=2, stride=2))
-        self.layer2 = torch.nn.Sequential(
-            torch.nn.Conv2d(16, 32, kernel_size=5, stride=1, padding=2),
+            torch.nn.Conv2d(1, 32, kernel_size=5, stride=1, padding=2),
             torch.nn.BatchNorm2d(32),
             torch.nn.ReLU(),
             torch.nn.MaxPool2d(kernel_size=2, stride=2))
-        self.fc = torch.nn.Linear(7*7*32, num_classes)
+        self.layer2 = torch.nn.Sequential(
+            torch.nn.Conv2d(32, 64, kernel_size=5, stride=1, padding=2),
+            torch.nn.BatchNorm2d(64),
+            torch.nn.ReLU(),
+            torch.nn.MaxPool2d(kernel_size=2, stride=2))
+        self.fc = torch.nn.Linear(7*7*64, num_classes)
         
     def forward(self, x):
         out = self.layer1(x)
@@ -815,7 +815,7 @@ for i in range(10):
 np.mean([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))]), np.min([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))]), np.max([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))])
 
 
-# In[270]:
+# In[274]:
 
 
 y_test_pred = net(torch.FloatTensor(X_test).view(10000, 1, 28, 28))
