@@ -557,7 +557,14 @@ answer_df.to_csv('./baseline.csv', index=False)
 
 # *Рекомендация*: попробуйте поменять количество итераций, количество нейронов, количество слоёв, гиперпараметры сети (learning_rate, метод оптимизации вместо SGD можно взять другой)
 
-# In[132]:
+# In[238]:
+
+
+X_train_tensor = torch.FloatTensor(X_train)
+y_train_tensor = torch.LongTensor(y_train.astype(np.int64))
+
+
+# In[224]:
 
 
 X_train_tensor = torch.FloatTensor(X_train)
@@ -583,22 +590,25 @@ D_in, H, D_out = 784, 100, 10
 # определим нейросеть:
 net = torch.nn.Sequential(
     torch.nn.Linear(D_in, H),
-    torch.nn.ReLU(),
+    torch.nn.Softplus(),
+    torch.nn.Dropout(0.3),
     torch.nn.Linear(H, H),
-    torch.nn.ReLU(),
+    torch.nn.Softplus(),
+    torch.nn.Dropout(0.3),
     torch.nn.Linear(H, H),
-    torch.nn.ReLU(),
+    torch.nn.Softplus(),
+    torch.nn.Dropout(0.3),
     torch.nn.Linear(H, D_out),
     torch.nn.Softmax()
 )
 
 
-BATCH_SIZE = 64
+BATCH_SIZE = 64*2
 NUM_EPOCHS = 200
 
 loss_fn = torch.nn.CrossEntropyLoss(size_average=False)
 
-learning_rate = 1e-4
+learning_rate = 1e-5
 optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 
 for epoch_num  in range(NUM_EPOCHS):
@@ -615,7 +625,7 @@ for epoch_num  in range(NUM_EPOCHS):
         
         # выводем качество каждые 2000 батчей
             
-        if iter_num % NUM_EPOCHS*10 == 99:
+        if iter_num % 100 == 99:
             print('[{}, {}] current loss: {}'.format(epoch_num, iter_num + 1, running_loss / 2000))
             running_loss = 0.0
             
@@ -631,7 +641,7 @@ for epoch_num  in range(NUM_EPOCHS):
         iter_num += 1
 
 
-# In[133]:
+# In[225]:
 
 
 class_correct = list(0. for i in range(10))
@@ -656,10 +666,159 @@ for i in range(10):
         classes[i], 100 * class_correct[i] / class_total[i]))
 
 
-# In[134]:
+# In[226]:
+
+
+np.mean([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))])
+
+
+# In[227]:
 
 
 y_test_pred = net(torch.FloatTensor(X_test))
+
+_, predicted = torch.max(y_test_pred, 1)
+
+predicted
+
+answer_df = pd.DataFrame(data=predicted.numpy(), columns=['Category'])
+answer_df.head()
+
+answer_df['Id'] = answer_df.index
+
+name = input("try name - ")
+
+try:
+    os.stat("submits")
+except:
+    os.mkdir("submits")  
+
+answer_df.to_csv('./submits/%s.csv' %(name), index=False)
+
+
+# In[271]:
+
+
+X_train_tensor = torch.FloatTensor(X_train)
+X_train_tensor = X_train_tensor.view(60000,1,28,28)
+y_train_tensor = torch.LongTensor(y_train.astype(np.int64))
+
+length = y_train_tensor.shape[0]
+num_classes = 10  # количество классов, в нашем случае 10 типов одежды
+
+# закодированные OneHot-ом метки классов
+y_onehot = torch.FloatTensor(length, num_classes)
+
+y_onehot.zero_()
+y_onehot.scatter_(1, y_train_tensor.view(-1, 1), 1)
+
+
+
+# N - размер батча (batch_size, нужно для метода оптимизации)
+# D_in - размерность входа (количество признаков у объекта)
+# H - размерность скрытых слоёв; 
+# D_out - размерность выходного слоя (суть - количество классов)
+D_in, H, D_out = 784, 100, 10
+
+# определим нейросеть:
+class ConvNet(torch.nn.Module):
+    def __init__(self, num_classes=10):
+        super(ConvNet, self).__init__()
+        self.layer1 = torch.nn.Sequential(
+            torch.nn.Conv2d(1, 16, kernel_size=5, stride=1, padding=2),
+            torch.nn.BatchNorm2d(16),
+            torch.nn.ReLU(),
+            torch.nn.MaxPool2d(kernel_size=2, stride=2))
+        self.layer2 = torch.nn.Sequential(
+            torch.nn.Conv2d(16, 32, kernel_size=5, stride=1, padding=2),
+            torch.nn.BatchNorm2d(32),
+            torch.nn.ReLU(),
+            torch.nn.MaxPool2d(kernel_size=2, stride=2))
+        self.fc = torch.nn.Linear(7*7*32, num_classes)
+        
+    def forward(self, x):
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = out.reshape(out.size(0), -1)
+        out = self.fc(out)
+        return out
+
+net = ConvNet()
+
+BATCH_SIZE = 64
+NUM_EPOCHS = 10
+
+loss_fn = torch.nn.CrossEntropyLoss(size_average=False)
+
+learning_rate = 1e-4
+optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
+
+for epoch_num  in range(NUM_EPOCHS):
+    iter_num = 0
+    running_loss = 0.0
+    for X_batch, y_batch in generate_batches(X_train_tensor, y_train_tensor, BATCH_SIZE):
+        # forward (подсчёт ответа с текущими весами)
+        
+        y_pred = net(X_batch)
+
+        # вычисляем loss'ы
+        loss = loss_fn(y_pred, y_batch)
+        
+        running_loss += loss.item()
+        
+        # выводем качество каждые 2000 батчей
+            
+        if iter_num % 100 == 99:
+            print('[{}, {}] current loss: {}'.format(epoch_num, iter_num + 1, running_loss / 2000))
+            running_loss = 0.0
+            
+        # зануляем градиенты
+        optimizer.zero_grad()
+
+        # backward (подсчёт новых градиентов)
+        loss.backward()
+
+        # обновляем веса
+        optimizer.step()
+        
+        iter_num += 1
+
+
+# In[272]:
+
+
+class_correct = list(0. for i in range(10))
+class_total = list(0. for i in range(10))
+
+classes = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 
+           'Sandal', 'Shirt', 'Sneaker','Bag', 'Ankle boot']
+
+with torch.no_grad():
+    for X_batch, y_batch in generate_batches(X_train_tensor, y_train_tensor, BATCH_SIZE):
+        y_pred = net(X_batch)
+        _, predicted = torch.max(y_pred, 1)
+        c = (predicted == y_batch).squeeze()
+        for i in range(len(y_pred)):
+            label = y_batch[i]
+            class_correct[label] += c[i].item()
+            class_total[label] += 1
+
+
+for i in range(10):
+    print('Accuracy of %5s : %2d %%' % (
+        classes[i], 100 * class_correct[i] / class_total[i]))
+
+
+# In[273]:
+
+
+np.mean([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))]), np.min([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))]), np.max([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))])
+
+
+# In[270]:
+
+
+y_test_pred = net(torch.FloatTensor(X_test).view(10000, 1, 28, 28))
 
 _, predicted = torch.max(y_test_pred, 1)
 
