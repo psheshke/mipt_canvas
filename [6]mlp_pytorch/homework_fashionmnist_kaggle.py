@@ -696,7 +696,7 @@ except:
 answer_df.to_csv('./submits/%s.csv' %(name), index=False)
 
 
-# In[271]:
+# In[282]:
 
 
 X_train_tensor = torch.FloatTensor(X_train)
@@ -735,18 +735,20 @@ class ConvNet(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.MaxPool2d(kernel_size=2, stride=2))
         self.fc = torch.nn.Linear(7*7*64, num_classes)
+        self.sm = torch.nn.Softmax()
         
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)
         out = out.reshape(out.size(0), -1)
         out = self.fc(out)
+        out = self.sm(out)
         return out
 
 net = ConvNet()
 
 BATCH_SIZE = 64
-NUM_EPOCHS = 10
+NUM_EPOCHS = 100
 
 loss_fn = torch.nn.CrossEntropyLoss(size_average=False)
 
@@ -784,7 +786,7 @@ for epoch_num  in range(NUM_EPOCHS):
         iter_num += 1
 
 
-# In[272]:
+# In[283]:
 
 
 class_correct = list(0. for i in range(10))
@@ -809,13 +811,13 @@ for i in range(10):
         classes[i], 100 * class_correct[i] / class_total[i]))
 
 
-# In[273]:
+# In[284]:
 
 
 np.mean([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))]), np.min([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))]), np.max([class_correct[i] / class_total[i] * 100 for i in range(len(class_correct))])
 
 
-# In[274]:
+# In[281]:
 
 
 y_test_pred = net(torch.FloatTensor(X_test).view(10000, 1, 28, 28))
